@@ -61,9 +61,11 @@ class STTManager:
     
     def __init__(self):
         self.recognizer = sr.Recognizer()
-        # Adjust dynamics for ambient noise handling
-        self.recognizer.energy_threshold = 300
+        # High-sensitivity dynamics for complete voice capture without premature cutoffs
+        self.recognizer.energy_threshold = 250
         self.recognizer.dynamic_energy_threshold = True
+        self.recognizer.pause_threshold = 2.0  # 2.0 seconds pause allowed mid-sentence without cutting off
+        self.recognizer.non_speaking_duration = 1.0
         self.microphone = None
         self._adjusted = False
 
@@ -73,7 +75,7 @@ class STTManager:
             self.microphone = sr.Microphone()
         return self.microphone
 
-    def listen_and_transcribe(self, timeout: float = 5.0, phrase_time_limit: float = 8.0) -> dict:
+    def listen_and_transcribe(self, timeout: float = 10.0, phrase_time_limit: float = 25.0) -> dict:
         """
         Listens on the system microphone and returns a dictionary with transcription or error messages.
         
@@ -99,10 +101,10 @@ class STTManager:
             with mic as source:
                 if not self._adjusted:
                     print("Adjusting microphone for ambient noise (quick)...")
-                    self.recognizer.adjust_for_ambient_noise(source, duration=0.3)
+                    self.recognizer.adjust_for_ambient_noise(source, duration=0.5)
                     self._adjusted = True
                 
-                print(f"Listening (timeout={timeout}s)...")
+                print(f"Listening (timeout={timeout}s, phrase_limit={phrase_time_limit}s)...")
                 audio = self.recognizer.listen(
                     source, 
                     timeout=timeout, 
