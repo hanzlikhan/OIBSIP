@@ -1,0 +1,9 @@
+{
+  "who made you": "I was created by a talented intern to be an advanced Python voice assistant.",
+  "tell me a joke": "Why do programmers wear glasses? Because they can't C#!",
+  "what is your favorite language": "Python, of course! It is clean, readable, and powerful.",
+  "open github": {
+    "action": "search",
+    "query": "https://github.com"
+  }
+}

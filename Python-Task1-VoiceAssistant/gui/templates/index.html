@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nova Voice Assistant Dashboard</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome for Premium Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Vanilla CSS Stylesheet -->
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <div id="app-container" class="app-wrapper">
+        <!-- Top Navigation Header -->
+        <header class="app-header">
+            <div class="brand-container">
+                <div class="brand-logo">
+                    <i class="fa-solid fa-microchip-ai brand-icon"></i>
+                </div>
+                <div class="brand-text">
+                    <h1 class="brand-title">NOVA</h1>
+                    <span class="brand-subtitle">Advanced Voice Agent</span>
+                </div>
+            </div>
+            <div class="connection-status-panel">
+                <span id="connection-indicator" class="status-dot disconnected"></span>
+                <span id="connection-text" class="status-text">Disconnected</span>
+            </div>
+        </header>
+
+        <!-- Main Body Grid Layout -->
+        <main class="dashboard-grid">
+            <!-- Left Side: Interaction & Logs -->
+            <section class="panel glass chat-panel">
+                <div class="panel-header">
+                    <h2 class="panel-title"><i class="fa-solid fa-comments"></i> Activity Log</h2>
+                    <button id="btn-clear-chat" class="btn-icon" title="Clear Chat Log">
+                        <i class="fa-solid fa-trash-can"></i>
+                    </button>
+                </div>
+                <div id="chat-messages-container" class="chat-log scrollbar-styled">
+                    <div class="chat-bubble assistant-bubble">
+                        <p class="bubble-text">Hello! I am Nova, your local voice assistant. Click the microphone orb or type a query below to interact with me.</p>
+                        <span class="bubble-time">System ready</span>
+                    </div>
+                </div>
+                <form id="text-input-form" class="input-form">
+                    <input type="text" id="query-text-input" placeholder="Type a command and press Enter..." autocomplete="off">
+                    <button type="submit" id="btn-submit-query" class="btn-send">
+                        <i class="fa-solid fa-paper-plane"></i>
+                    </button>
+                </form>
+            </section>
+
+            <!-- Center: Visualizer / Orb -->
+            <section class="orb-visualizer-container">
+                <div id="assistant-state-card" class="state-card">
+                    <span id="assistant-state-text" class="state-label">IDLE</span>
+                </div>
+                
+                <!-- Central Breathing Orb / Click to listen -->
+                <div id="assistant-mic-orb" class="mic-orb idle-breath" title="Click to talk">
+                    <div class="orb-inner">
+                        <i id="mic-icon" class="fa-solid fa-microphone mic-symbol"></i>
+                    </div>
+                    <!-- Ripple effect rings -->
+                    <div class="orb-ring ring-1"></div>
+                    <div class="orb-ring ring-2"></div>
+                </div>
+                
+                <!-- Canvas Wave Visualizer -->
+                <canvas id="waveform-canvas" class="waveform-display"></canvas>
+                
+                <p id="assistant-prompt-text" class="prompt-instruction">Click the orb or press Spacebar to start speaking</p>
+                <div class="hands-free-toggle-wrapper">
+                    <label class="switch-container">
+                        <input type="checkbox" id="toggle-hands-free">
+                        <span class="slider-round"></span>
+                    </label>
+                    <span class="toggle-label-text">Hands-Free (Auto-Listen)</span>
+                </div>
+            </section>
+
+            <!-- Right Side: Settings & Extras -->
+            <section class="panel glass details-panel">
+                <!-- Navigation Tabs -->
+                <div class="panel-tabs">
+                    <button id="tab-btn-activity" class="tab-btn active" onclick="switchTab('activity')">
+                        <i class="fa-solid fa-brain"></i> Agent
+                    </button>
+                    <button id="tab-btn-reminders" class="tab-btn" onclick="switchTab('reminders')">
+                        <i class="fa-solid fa-clock"></i> Timers
+                    </button>
+                    <button id="tab-btn-commands" class="tab-btn" onclick="switchTab('commands')">
+                        <i class="fa-solid fa-code"></i> Commands
+                    </button>
+                    <button id="tab-btn-settings" class="tab-btn" onclick="switchTab('settings')">
+                        <i class="fa-solid fa-gears"></i> Settings
+                    </button>
+                </div>
+
+                <!-- Tab 0: Agent Activity Feed -->
+                <div id="tab-content-activity" class="tab-content active-tab scrollbar-styled">
+                    <div class="tab-header-inline">
+                        <h3>🧠 Agent Activity</h3>
+                        <button id="btn-clear-session" class="btn-icon-small" title="Clear session memory" onclick="clearSession()">
+                            <i class="fa-solid fa-rotate-left"></i> New Session
+                        </button>
+                    </div>
+                    <!-- Memory stats -->
+                    <div id="memory-stats-bar" class="memory-stats-bar">
+                        <span id="stat-conversations"><i class="fa-solid fa-comments"></i> — conversations</span>
+                        <span id="stat-facts"><i class="fa-solid fa-lightbulb"></i> — facts</span>
+                        <span id="stat-model"><i class="fa-solid fa-robot"></i> llama-3.3-70b</span>
+                    </div>
+                    <!-- Live thought process feed -->
+                    <div id="activity-feed" class="activity-feed-container">
+                        <div class="activity-idle">
+                            <i class="fa-solid fa-satellite-dish"></i>
+                            <p>Agent activity will appear here when Nova is processing a command.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab 1: Active Reminders -->
+                <div id="tab-content-reminders" class="tab-content scrollbar-styled">
+                    <div class="tab-header-inline">
+                        <h3>Active Reminders</h3>
+                    </div>
+                    <div id="reminders-list" class="reminders-list-container">
+                        <div class="empty-state">
+                            <i class="fa-solid fa-bell-slash"></i>
+                            <p>No active reminders set. Try saying: "Set a reminder for ten seconds to take a break".</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab 2: Custom Commands -->
+                <div id="tab-content-commands" class="tab-content scrollbar-styled">
+                    <div class="tab-header-inline">
+                        <h3>Add Voice Trigger</h3>
+                    </div>
+                    <form id="custom-command-form" class="settings-form">
+                        <div class="form-group">
+                            <label for="cmd-trigger-input">Spoken Phrase (Trigger)</label>
+                            <input type="text" id="cmd-trigger-input" placeholder="e.g., tell me a story" required autocomplete="off">
+                        </div>
+                        <div class="form-group">
+                            <label for="cmd-response-input">Assistant Spoken Reply</label>
+                            <textarea id="cmd-response-input" rows="3" placeholder="e.g., Once upon a time in a byte..." required></textarea>
+                        </div>
+                        <button type="submit" id="btn-save-command" class="btn-primary">
+                            <i class="fa-solid fa-plus"></i> Register Command
+                        </button>
+                    </form>
+
+                    <h3 class="section-title">Registered Custom Triggers</h3>
+                    <div id="custom-commands-list" class="custom-commands-registry scrollbar-styled">
+                        <!-- Loaded dynamically -->
+                    </div>
+                </div>
+
+                <!-- Tab 3: System Settings -->
+                <div id="tab-content-settings" class="tab-content scrollbar-styled">
+                    <form id="system-settings-form" class="settings-form">
+                        <h3>Integrations & Hardware</h3>
+                        
+                        <div class="form-group">
+                            <label for="settings-weather-key">OpenWeatherMap API Key</label>
+                            <div class="input-password-wrapper">
+                                <input type="password" id="settings-weather-key" placeholder="Enter API Key for live weather updates...">
+                                <button type="button" id="btn-toggle-weather-key" class="btn-toggle-visibility">
+                                    <i class="fa-solid fa-eye"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="settings-voice-gender">Voice Tone</label>
+                                <select id="settings-voice-gender">
+                                    <option value="0">System Voice 1 (Male)</option>
+                                    <option value="1">System Voice 2 (Female)</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="settings-voice-rate">Speaking Rate (WPM)</label>
+                                <input type="number" id="settings-voice-rate" min="100" max="300" value="175">
+                            </div>
+                        </div>
+
+                        <h3>Email SMTP Settings</h3>
+                        <div class="form-group checkbox-group">
+                            <input type="checkbox" id="settings-debug-mode" checked>
+                            <label for="settings-debug-mode">Email Debug Mode (Simulation outbox)</label>
+                        </div>
+
+                        <div id="smtp-configurations-fields">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="settings-smtp-server">SMTP Server</label>
+                                    <input type="text" id="settings-smtp-server" value="smtp.gmail.com">
+                                </div>
+                                <div class="form-group">
+                                    <label for="settings-smtp-port">Port</label>
+                                    <input type="number" id="settings-smtp-port" value="587">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="settings-smtp-user">SMTP Username / Email</label>
+                                <input type="email" id="settings-smtp-user" placeholder="example@gmail.com">
+                            </div>
+                            <div class="form-group">
+                                <label for="settings-smtp-from">Sender Email Address</label>
+                                <input type="email" id="settings-smtp-from" placeholder="example@gmail.com">
+                            </div>
+                        </div>
+
+                        <button type="submit" id="btn-save-settings" class="btn-primary">
+                            <i class="fa-solid fa-floppy-disk"></i> Save Configuration
+                        </button>
+                    </form>
+                </div>
+            </section>
+        </main>
+
+        <!-- Global Toast Notifications -->
+        <div id="toast-notification-container" class="toast-container"></div>
+        
+        <!-- Timer Alarm Overlay -->
+        <div id="alarm-modal" class="modal-overlay hidden">
+            <div class="modal-card glass">
+                <div class="modal-icon">
+                    <i class="fa-solid fa-bell ringing"></i>
+                </div>
+                <h2 class="modal-title">Reminder Alert!</h2>
+                <p id="alarm-message-text" class="modal-body">Time to check the oven!</p>
+                <button id="btn-dismiss-alarm" class="btn-dismiss">Dismiss Alert</button>
+            </div>
+        </div>
+        <!-- Spotlight HUD (Nova 2.1) -->
+        <div id="spotlight-hud" class="spotlight-overlay hidden">
+            <div class="spotlight-container glass">
+                <div class="spotlight-header">
+                    <i class="fa-solid fa-brain hud-brain-icon"></i>
+                    <input type="text" id="spotlight-input" placeholder="Ask Nova anything..." autocomplete="off">
+                    <span class="spotlight-shortcut">ESC</span>
+                </div>
+                <div id="spotlight-activity-feed" class="spotlight-feed scrollbar-styled">
+                    <div class="spotlight-placeholder">
+                        <i class="fa-solid fa-satellite"></i>
+                        <p>Press <kbd>Ctrl+Shift+Space</kbd> anytime to summon or dismiss Nova.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- WebSocket and visualizer client script -->
+    <script src="/static/js/app.js"></script>
+</body>
+</html>
