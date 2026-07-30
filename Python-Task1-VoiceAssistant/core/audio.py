@@ -111,9 +111,20 @@ class STTManager:
                     phrase_time_limit=phrase_time_limit
                 )
                 
-            print("Processing voice audio...")
-            # Use Google Web Speech API (free tier built-in)
-            transcription = self.recognizer.recognize_google(audio)
+            print("Processing voice audio (Urdu / English dual-recognition)...")
+            # Try Urdu (ur-PK) first for accurate Urdu speech capture, fallback to English (en-US)
+            try:
+                transcription = self.recognizer.recognize_google(audio, language="ur-PK")
+            except sr.UnknownValueError:
+                try:
+                    transcription = self.recognizer.recognize_google(audio, language="en-US")
+                except sr.UnknownValueError:
+                    return {
+                        "success": False,
+                        "text": "",
+                        "error_code": "unknown_value"
+                    }
+                    
             return {
                 "success": True,
                 "text": transcription,

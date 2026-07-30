@@ -285,39 +285,42 @@ class VoiceAssistant:
                 }
             }
 
-        # ── 1.5 Fast-Path Direct Launcher (Sub-second OS execution) ───────
+        # ── 1.5 Fast-Path Direct Launcher (English + Roman Urdu + Urdu) ───
         import re
         import webbrowser
 
+        target_app = None
         open_app_match = re.match(r"^(?:open|launch|run|start)\s+(.+)$", clean_text)
-        search_site_match = re.match(r"^(?:search|look\s*up)\s+(.+?)(?:\s+(?:on|in)\s+(google|youtube|bing|github))?$", clean_text)
+        urdu_app_match = re.match(r"^(.+?)\s+(?:kholo|khol do|chalao|chala do|open karo|open kar do|کھولو|چلاؤ)$", clean_text)
 
         if open_app_match:
             target_app = open_app_match.group(1).strip()
-            # Ignore general questions starting with open like 'open ended question'
-            if target_app not in ("question", "discussion", "ended"):
-                print(f"[FastPath] Instant launcher triggered for: '{target_app}'")
-                self._push("status_change", {"status": "processing", "text": f"Launching {target_app}..."})
-                self._on_activity("tool_call", f"⚡ Instant Launch: '{target_app}'")
-                
-                res_msg = open_application(target_app)
-                speech_res = f"Opened {target_app}."
-                
-                self._push("status_change", {"status": "speaking", "text": speech_res})
-                audio.speak(speech_res)
-                self._push("status_change", {"status": "idle", "text": ""})
+        elif urdu_app_match:
+            target_app = urdu_app_match.group(1).strip()
 
-                return {
-                    "query": text,
-                    "intent": "open_application",
-                    "confidence": 1.0,
-                    "speech": speech_res,
-                    "ui_data": {
-                        "tools_used": ["open_application"],
-                        "thinking_steps": [{"type": "tool_call", "text": f"⚡ Fast-Path: Launched {target_app}"}],
-                        "memory_stats": memory_manager.get_stats()
-                    }
+        if target_app and target_app not in ("question", "discussion", "ended"):
+            print(f"[FastPath] Instant launcher triggered for: '{target_app}'")
+            self._push("status_change", {"status": "processing", "text": f"Launching {target_app}..."})
+            self._on_activity("tool_call", f"⚡ Instant Launch: '{target_app}'")
+            
+            res_msg = open_application(target_app)
+            speech_res = f"Opened {target_app}."
+            
+            self._push("status_change", {"status": "speaking", "text": speech_res})
+            audio.speak(speech_res)
+            self._push("status_change", {"status": "idle", "text": ""})
+
+            return {
+                "query": text,
+                "intent": "open_application",
+                "confidence": 1.0,
+                "speech": speech_res,
+                "ui_data": {
+                    "tools_used": ["open_application"],
+                    "thinking_steps": [{"type": "tool_call", "text": f"⚡ Fast-Path: Launched {target_app}"}],
+                    "memory_stats": memory_manager.get_stats()
                 }
+            }
 
         # ── 2. Fallback to Groq LLM Brain (Ultra-Fast 8B Instant) ─────────
         # Notify UI that processing started
