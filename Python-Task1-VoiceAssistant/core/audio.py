@@ -18,40 +18,43 @@ def _get_tts_engine():
         _thread_local.engine = pyttsx3.init()
     return _thread_local.engine
 
-# Thread-safe TTS function. Retrieves a cached SAPI5 engine per-thread to avoid slow initialization.
+# Thread-safe non-blocking TTS function. Uses SAPI5 on Windows safely.
 def speak(text: str, rate: int = None, gender: int = None) -> bool:
     """
     Speaks the given text using local TTS engine.
-    Runs synchronously. Should be called inside background worker threads if non-blocking behavior is needed.
+    Runs asynchronously in a background thread so it never blocks the server or WebSocket loop.
     """
-    # Use default configurations if not overridden
+    if not text or not text.strip():
+        return True
+
     voice_rate = rate if rate is not None else settings.DEFAULT_VOICE_RATE
     voice_gender = gender if gender is not None else settings.DEFAULT_VOICE_GENDER
 
-    try:
-        engine = _get_tts_engine()
-    except Exception as e:
-        print(f"Failed to initialize pyttsx3 TTS engine: {e}", file=sys.stderr)
-        return False
+    def _speak_worker():
+        try:
+            try:
+                import pythoncom
+                pythoncom.CoInitialize()
+            except Exception:
+                pass
 
-    try:
-        engine.setProperty("rate", voice_rate)
-        
-        voices = engine.getProperty("voices")
-        if voices:
-            # Bound gender request within available voice indexes
-            index = min(max(0, voice_gender), len(voices) - 1)
-            engine.setProperty("voice", voices[index].id)
+            import pyttsx3
+            engine = pyttsx3.init()
+            engine.setProperty("rate", voice_rate)
             
-        engine.say(text)
-        engine.runAndWait()
-        return True
-    except Exception as e:
-        print(f"Text-To-Speech execution error: {e}", file=sys.stderr)
-        # Clear engine cache on error to force re-initialization next time
-        if hasattr(_thread_local, "engine"):
-            delattr(_thread_local, "engine")
-        return False
+            voices = engine.getProperty("voices")
+            if voices:
+                index = min(max(0, voice_gender), len(voices) - 1)
+                engine.setProperty("voice", voices[index].id)
+                
+            engine.say(text)
+            engine.runAndWait()
+        except Exception as e:
+            print(f"[TTS Execution Warning] {e}", file=sys.stderr)
+
+    t = threading.Thread(target=_speak_worker, daemon=True)
+    t.start()
+    return True
 
 class STTManager:
     """Manages recording voice and returning text transcription."""

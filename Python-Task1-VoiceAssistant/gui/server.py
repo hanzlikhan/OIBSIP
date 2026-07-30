@@ -142,6 +142,7 @@ def save_environment_settings(data: dict):
     # Map of key-value pairs we want to write
     updates = {
         "OPENWEATHERMAP_API_KEY": settings.WEATHER_API_KEY,
+        "GROQ_API_KEY": settings.GROQ_API_KEY,
         "SMTP_SERVER": settings.SMTP_SERVER,
         "SMTP_PORT": str(settings.SMTP_PORT),
         "SMTP_USER": settings.SMTP_USER,
