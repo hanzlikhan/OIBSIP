@@ -48,7 +48,7 @@ def _log_action(action: str, details: dict, result: str):
 # App Launcher
 # ─────────────────────────────────────────────────────────────────────────────
 APP_MAP = {
-    # Common Windows apps
+    # Common Windows apps & quick launchers
     "notepad": "notepad.exe",
     "calculator": "calc.exe",
     "paint": "mspaint.exe",
@@ -60,11 +60,16 @@ APP_MAP = {
     "powershell": "powershell.exe",
     "vs code": "code",
     "visual studio code": "code",
-    "chrome": "chrome.exe",
-    "google chrome": "chrome.exe",
+    "chrome": "start chrome",
+    "google chrome": "start chrome",
+    "browser": "start chrome",
     "firefox": "firefox.exe",
     "edge": "msedge.exe",
     "microsoft edge": "msedge.exe",
+    "youtube": "https://www.youtube.com",
+    "google": "https://www.google.com",
+    "github": "https://www.github.com",
+    "chatgpt": "https://chatgpt.com",
     "word": "winword.exe",
     "excel": "excel.exe",
     "powerpoint": "powerpnt.exe",
@@ -84,23 +89,26 @@ APP_MAP = {
 
 
 def open_application(app_name: str) -> str:
-    """Launch an application by name."""
+    """Launch an application or URL by name instantaneously."""
+    import webbrowser
     app_lower = app_name.lower().strip()
 
-    # Check our known app map
-    executable = APP_MAP.get(app_lower, None)
-
-    # If not in map, try running the name directly (user might say exact path)
-    if not executable:
-        executable = app_name
+    # Check known app map
+    target = APP_MAP.get(app_lower, None)
+    if not target:
+        target = app_name
 
     try:
-        if executable.startswith("ms-"):
-            # Windows URI scheme (ms-settings:, ms-teams:, etc.)
-            os.startfile(executable)
+        if target.startswith("http://") or target.startswith("https://"):
+            webbrowser.open(target)
+        elif target.startswith("ms-"):
+            os.startfile(target)
+        elif "chrome" in target or "browser" in app_lower:
+            # Fast native Windows start command for Chrome
+            subprocess.Popen("start chrome", shell=True)
         else:
             subprocess.Popen(
-                executable,
+                target,
                 shell=True,
                 stdout=subprocess.DEVNULL,
                 stderr=subprocess.DEVNULL,
@@ -108,7 +116,7 @@ def open_application(app_name: str) -> str:
             )
 
         result = f"Launched '{app_name}' successfully."
-        _log_action("open_application", {"app_name": app_name, "executable": executable}, result)
+        _log_action("open_application", {"app_name": app_name, "target": target}, result)
         return result
 
     except Exception as e:

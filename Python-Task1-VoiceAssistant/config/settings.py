@@ -23,7 +23,7 @@ class Settings:
     GROQ_API_KEY = os.getenv("GROQ_API_KEY", "")
 
     # Nova LLM Settings
-    NOVA_LLM_MODEL = os.getenv("NOVA_LLM_MODEL", "llama-3.3-70b-versatile")
+    NOVA_LLM_MODEL = os.getenv("NOVA_LLM_MODEL", "llama-3.1-8b-instant")
     NOVA_MAX_TOKENS = int(os.getenv("NOVA_MAX_TOKENS", "1024"))
     NOVA_TEMPERATURE = float(os.getenv("NOVA_TEMPERATURE", "0.7"))
 
