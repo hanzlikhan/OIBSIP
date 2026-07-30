@@ -3,9 +3,10 @@ __pycache__/
 *.py[cod]
 *$py.class
 
-# Testing / Cache
+# Pytest & Cache
 .pytest_cache/
 .cache/
+*.db
 
 # Environment Variables & Security Credentials
 .env
