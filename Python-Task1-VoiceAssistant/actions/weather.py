@@ -69,7 +69,7 @@ class WeatherAction(BaseAction):
 
         try:
             print(f"Fetching live weather for {city} from OpenWeatherMap...")
-            response = requests.get(url, params=params, timeout=8)
+            response = requests.get(url, params=params, timeout=3)
             
             if response.status_code == 200:
                 data = response.json()

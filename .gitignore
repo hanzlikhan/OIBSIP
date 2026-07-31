@@ -7,7 +7,12 @@ __pycache__/
 .pytest_cache/
 .cache/
 
-# Environment Variables & Security Credentials
+# Data logs & runtime contexts
+data/browser_context/
+Python-Task1-VoiceAssistant/data/browser_context/
+Python-Task1-VoiceAssistant/data/screenshots/
+*.db
+action_log.jsonl
 .env
 *.key
 data/vault.key

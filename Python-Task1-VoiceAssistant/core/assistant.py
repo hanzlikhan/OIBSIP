@@ -77,6 +77,9 @@ class VoiceAssistant:
         Called by NovaBrain whenever the LLM decides to use a tool.
         Maps tool names to actual Python function implementations.
         """
+        if not isinstance(tool_args, dict):
+            tool_args = {}
+
         print(f"[Tool] Executing: {tool_name}({tool_args})")
 
         try:
@@ -285,18 +288,21 @@ class VoiceAssistant:
                 }
             }
 
-        # ── 1.5 Fast-Path Direct Launcher (English + Roman Urdu + Urdu) ───
+        # ── 1.5 Fast-Path Direct Launcher (Ultra-Fast < 5ms) ───
         import re
         import webbrowser
+        from actions.device_control import APP_MAP
 
         target_app = None
-        open_app_match = re.match(r"^(?:open|launch|run|start)\s+(.+)$", clean_text)
-        urdu_app_match = re.match(r"^(.+?)\s+(?:kholo|khol do|chalao|chala do|open karo|open kar do|کھولو|چلاؤ)$", clean_text)
+        open_app_match = re.match(
+            r"^(?:please\s+)?(?:can\s+you\s+)?(?:open|launch|run|start|open\s+up|go\s+to|visit)\s+(.+?)(?:\s+please|\s+for\s+me)?$",
+            clean_text
+        )
 
         if open_app_match:
             target_app = open_app_match.group(1).strip()
-        elif urdu_app_match:
-            target_app = urdu_app_match.group(1).strip()
+        elif clean_text in APP_MAP or any(k == clean_text for k in APP_MAP):
+            target_app = clean_text
 
         if target_app and target_app not in ("question", "discussion", "ended"):
             print(f"[FastPath] Instant launcher triggered for: '{target_app}'")
@@ -318,6 +324,39 @@ class VoiceAssistant:
                 "ui_data": {
                     "tools_used": ["open_application"],
                     "thinking_steps": [{"type": "tool_call", "text": f"⚡ Fast-Path: Launched {target_app}"}],
+                    "memory_stats": memory_manager.get_stats()
+                }
+            }
+
+        # ── 1.6 Fast-Path Weather Interceptor (Sub-Second < 100ms) ────────
+        weather_match = re.match(
+            r"^(?:what(?:'s|\s+is)\s+the\s+)?weather\s+(?:in|of|for|at)\s+(.+?)(?:\s+today|\s+now)?$",
+            clean_text
+        ) or re.match(
+            r"^(.+?)\s+weather$",
+            clean_text
+        )
+
+        if weather_match:
+            city_target = weather_match.group(1).strip()
+            print(f"[FastPath] Instant weather triggered for: '{city_target}'")
+            self._push("status_change", {"status": "processing", "text": f"Getting weather for {city_target}..."})
+            self._on_activity("tool_call", f"🌤️ Instant Weather: '{city_target}'")
+            
+            weather_res = self._execute_tool("get_weather", {"city": city_target})
+            
+            self._push("status_change", {"status": "speaking", "text": weather_res})
+            audio.speak(weather_res)
+            self._push("status_change", {"status": "idle", "text": ""})
+
+            return {
+                "query": text,
+                "intent": "get_weather",
+                "confidence": 1.0,
+                "speech": weather_res,
+                "ui_data": {
+                    "tools_used": ["get_weather"],
+                    "thinking_steps": [{"type": "tool_call", "text": f"⚡ Fast-Path: Weather for {city_target}"}],
                     "memory_stats": memory_manager.get_stats()
                 }
             }

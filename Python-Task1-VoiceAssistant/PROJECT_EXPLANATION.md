@@ -6,7 +6,7 @@
 
 ## 🌟 1. Project High-Level Summary (The 30-Second Elevator Pitch)
 
-> *"Nova is an autonomous, local-first, privacy-focused AI Voice Assistant built with Python, FastAPI, and Groq LLM Tool Calling. Unlike basic chatbots that only answer text questions, Nova can physically control your computer (launch apps, take screenshots, check hardware stats), automate web pages using Playwright, send emails, set alarms, and understand commands in **English, Urdu, and Roman Urdu** in sub-second speed."*
+> *"Nova is an autonomous, local-first, privacy-focused AI Voice Assistant built with Python, FastAPI, and Groq LLM Tool Calling. Unlike basic chatbots that only answer text questions, Nova can physically control your computer (launch apps, take screenshots, check hardware stats), automate web pages using Playwright, send emails, set alarms, and understand voice commands in **English** in sub-second speed."*
 
 ---
 
@@ -16,7 +16,7 @@ To easily explain Nova to anyone, compare it to a human body:
 
 | Human Part | Nova Component | File Location | Simple Explanation |
 | :--- | :--- | :--- | :--- |
-| **👂 Ears** | Speech-to-Text (STT) | `core/audio.py` | Listens to your voice via microphone and converts spoken audio into written text. Supports English and Urdu (`ur-PK`). |
+| **👂 Ears** | Speech-to-Text (STT) | `core/audio.py` | Listens to your voice via microphone and converts spoken audio into written text accurately in English (`en-US`). |
 | **🧠 Brain** | Groq LLM Engine & Fast-Path | `core/brain.py` & `core/assistant.py` | Analyzes your request, understands your intent, and decides whether to speak back or run a tool. |
 | **🗣️ Voice** | Text-to-Speech (TTS) | `core/audio.py` | Uses Windows SAPI5 voice engine (`pyttsx3`) to speak responses out loud in a non-blocking background thread. |
 | **🖐️ Hands** | OS & Web Action Tools | `actions/` directory | Launches apps (Chrome, Notepad), takes screenshots, reads CPU/RAM stats, and automates websites. |
@@ -92,19 +92,19 @@ Here is what every file in your project does, explained in plain English:
 #### 4. `core/assistant.py` — *The Master Director*
 * **What it does**: The central controller that connects the AI brain, action tools, memory, and WebSocket UI.
 * **Key Features**:
-  - **Fast-Path Router**: Matches instant triggers like *"open chrome"*, *"chrome kholo"*, *"open notepad"* and executes them in **< 5 milliseconds**!
+  - **Fast-Path Router**: Matches instant triggers like *"open chrome"*, *"open notepad"* and executes them in **< 5 milliseconds**!
   - **Tool Routing**: Connects LLM tool requests to actual Python execution functions in `actions/`.
 
 #### 5. `core/brain.py` — *The Groq AI Reasoner*
 * **What it does**: Connects to the Groq cloud LLM API using the `llama-3.1-8b-instant` model.
 * **Key Features**:
   - **Autonomous Tool Calling**: Declares tools (`web_search`, `device_control`, `set_reminder`, `get_weather`) to the LLM so it can choose which tool to invoke.
-  - **Urdu & Roman Urdu Intelligence**: Instructs the LLM via System Prompt to natively understand Urdu and reply in the same language spoken by the user.
+  - **English Speech Intelligence**: Instructs the LLM via System Prompt to natively understand English queries and reply naturally.
 
 #### 6. `core/audio.py` — *The Ears & Spoken Voice*
 * **What it does**: Manages microphone recording (STT) and text-to-speech voice generation (TTS).
 * **Key Features**:
-  - **Dual-Language STT**: Uses Google Speech Recognition with primary **Urdu (`ur-PK`)** capture and **English (`en-US`)** fallback.
+  - **Accurate English STT**: Uses Google Speech Recognition configured for **English (`en-US`)** capture.
   - **Natural Speaking Thresholds**: Set `pause_threshold = 2.0s` (allows 2 seconds mid-sentence pauses without cutting off) and `phrase_time_limit = 25.0s`.
   - **Non-Blocking TTS**: Runs `pyttsx3` inside a daemon thread with `pythoncom.CoInitialize()` so speech never freezes the web UI.
 
@@ -166,10 +166,10 @@ Here is what every file in your project does, explained in plain English:
 When presenting this project, use these key talking points:
 
 ### 1. **"How does Nova achieve sub-second fast performance?"**
-> *"We optimized speed on three levels: First, we use Groq's high-speed `llama-3.1-8b-instant` LLM model for 100ms reasoning. Second, we built a Fast-Path Router that intercepts common app and browser commands like 'Chrome kholo' in under 5 milliseconds. Third, speech synthesis runs asynchronously in background daemon threads so the UI never waits for audio playback."*
+> *"We optimized speed on three levels: First, we use Groq's high-speed `llama-3.1-8b-instant` LLM model for 100ms reasoning. Second, we built a Fast-Path Router that intercepts common app and browser commands like 'open chrome' in under 5 milliseconds. Third, speech synthesis runs asynchronously in background daemon threads so the UI never waits for audio playback."*
 
-### 2. **"How does Urdu & Roman Urdu support work?"**
-> *"We implemented dual-language speech recognition in `core/audio.py` that listens in Urdu (`ur-PK`) with English fallback. In the brain module (`core/brain.py`), we instructed the LLM to understand Roman Urdu (e.g. 'mausam kaisa hai') and reply in the same language spoken by the user."*
+### 2. **"How does English Speech Recognition work?"**
+> *"We implemented focused English speech recognition in `core/audio.py` using `en-US` Google STT to ensure maximum accuracy without acoustic overlap or hallucinations."*
 
 ### 3. **"How does Nova protect user privacy?"**
 > *"Nova is local-first. The microphone is strictly closed by default and only activates on explicit user triggers (zero background listening). Sensitive credentials are encrypted with AES-256 Fernet keys in `core/vault.py`, and all automated actions leave a transparent audit log in `data/action_log.jsonl`."*

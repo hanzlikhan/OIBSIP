@@ -28,12 +28,12 @@
 
 ### 🎯 **Executive Summary**
 * **Project Name**: Nova AI Voice Assistant
-* **Core Objective**: To build an autonomous, privacy-focused, sub-second voice assistant capable of desktop control, web automation, real-time search, and bilingual voice recognition.
+* **Core Objective**: To build an autonomous, privacy-focused, sub-second voice assistant capable of desktop control, web automation, real-time search, and high-accuracy English voice recognition.
 
 ### 💡 **Key Innovations**
 * **Local-First & Privacy-Focused**: Zero background microphone listening. Audio is processed on explicit user activation.
 * **Autonomous LLM Tool Reasoning**: Powered by Groq `llama-3.1-8b-instant` for ultra-fast function calling.
-* **Bilingual Fluency**: Native support for **Urdu (`ur-PK`)**, **Roman Urdu**, and **English (`en-US`)**.
+* **High-Accuracy Speech Intelligence**: Optimized Google STT recognition in **English (`en-US`)**.
 
 ---
 
@@ -43,8 +43,8 @@
   * Leverages Groq LLM reasoning to dynamically invoke system actions (`web_search`, `device_control`, `set_reminder`, `get_weather`).
 * ⚡ **Sub-Second Fast-Path Launcher (< 5ms)**:
   * Instantly opens applications (Chrome, Notepad, Calculator, VS Code) and websites (YouTube, ChatGPT, GitHub).
-* 🇵🇰 **Native Urdu & English Voice Recognition**:
-  * Dual-pass Speech Recognition supporting Urdu commands (*"Chrome kholo"*, *"Mausam kaisa hai"*).
+* 🎙️ **High-Accuracy Voice Recognition**:
+  * Precise English Speech Recognition supporting direct voice commands (*"Open Chrome"*, *"What's the weather?"*).
 * 💻 **Desktop & Hardware Diagnostics**:
   * Monitors real-time CPU, RAM, disk space, and battery metrics via `psutil`. Captures desktop screenshots via `pyautogui`.
 * 🔒 **AES-256 Encrypted Credentials Vault**:
@@ -87,7 +87,7 @@
 | **Primary Language** | Python 3.9+ |
 | **Backend & WebSockets** | FastAPI, Uvicorn, WebSockets |
 | **AI / LLM Engine** | Groq API (`llama-3.1-8b-instant`), Natural Language Processing |
-| **Speech Recognition (STT)** | SpeechRecognition (Google Web Speech API: `ur-PK` & `en-US`) |
+| **Speech Recognition (STT)** | SpeechRecognition (Google Web Speech API: `en-US`) |
 | **Speech Synthesis (TTS)** | Pyttsx3 / Microsoft SAPI5 (Non-blocking background thread) |
 | **OS & Web Automation** | PyAutoGUI, psutil, Playwright (Headless/Headful Browser) |
 | **Security & Database** | Cryptography (`Fernet` AES-256), SQLite (`nova_memory.db`) |

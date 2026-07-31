@@ -64,8 +64,8 @@ class STTManager:
         # High-sensitivity dynamics for complete voice capture without premature cutoffs
         self.recognizer.energy_threshold = 250
         self.recognizer.dynamic_energy_threshold = True
-        self.recognizer.pause_threshold = 2.0  # 2.0 seconds pause allowed mid-sentence without cutting off
-        self.recognizer.non_speaking_duration = 1.0
+        self.recognizer.pause_threshold = 0.6  # Fast 0.6s silence detection (saves ~1.4s per voice command)
+        self.recognizer.non_speaking_duration = 0.4
         self.microphone = None
         self._adjusted = False
 
@@ -111,20 +111,16 @@ class STTManager:
                     phrase_time_limit=phrase_time_limit
                 )
                 
-            print("Processing voice audio (Urdu / English dual-recognition)...")
-            # Try Urdu (ur-PK) first for accurate Urdu speech capture, fallback to English (en-US)
+            print("Processing voice audio (English recognition)...")
             try:
-                transcription = self.recognizer.recognize_google(audio, language="ur-PK")
+                transcription = self.recognizer.recognize_google(audio, language="en-US")
             except sr.UnknownValueError:
-                try:
-                    transcription = self.recognizer.recognize_google(audio, language="en-US")
-                except sr.UnknownValueError:
-                    return {
-                        "success": False,
-                        "text": "",
-                        "error_code": "unknown_value"
-                    }
-                    
+                return {
+                    "success": False,
+                    "text": "",
+                    "error_code": "unknown_value"
+                }
+
             return {
                 "success": True,
                 "text": transcription,

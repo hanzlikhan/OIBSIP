@@ -89,31 +89,40 @@ APP_MAP = {
 
 
 def open_application(app_name: str) -> str:
-    """Launch an application or URL by name instantaneously."""
+    """Launch an application or URL by name instantaneously (< 5ms execution)."""
     import webbrowser
     app_lower = app_name.lower().strip()
 
-    # Check known app map
+    # Direct match in APP_MAP
     target = APP_MAP.get(app_lower, None)
+    
+    # Partial match if direct match fails
+    if not target:
+        for k, v in APP_MAP.items():
+            if k in app_lower or app_lower in k:
+                target = v
+                break
+
     if not target:
         target = app_name
 
     try:
         if target.startswith("http://") or target.startswith("https://"):
-            webbrowser.open(target)
+            webbrowser.open_new_tab(target)
         elif target.startswith("ms-"):
             os.startfile(target)
-        elif "chrome" in target or "browser" in app_lower:
-            # Fast native Windows start command for Chrome
-            subprocess.Popen("start chrome", shell=True)
+        elif target.startswith("start "):
+            subprocess.Popen(target, shell=True)
         else:
-            subprocess.Popen(
-                target,
-                shell=True,
-                stdout=subprocess.DEVNULL,
-                stderr=subprocess.DEVNULL,
-                creationflags=subprocess.DETACHED_PROCESS
-            )
+            try:
+                os.startfile(target)
+            except Exception:
+                subprocess.Popen(
+                    f"start {target}",
+                    shell=True,
+                    stdout=subprocess.DEVNULL,
+                    stderr=subprocess.DEVNULL
+                )
 
         result = f"Launched '{app_name}' successfully."
         _log_action("open_application", {"app_name": app_name, "target": target}, result)

@@ -18,9 +18,12 @@ venv/
 .venv/
 env/
 
-# Data logs
+# Data logs & runtime contexts
 data/outbox/*
 !data/outbox/.gitkeep
+data/browser_context/
+data/screenshots/
+*.db
 action_log.jsonl
 
 # IDE / System
